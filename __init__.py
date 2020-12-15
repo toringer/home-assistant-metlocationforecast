@@ -1,0 +1,1 @@
+"""met.no location forecast."""

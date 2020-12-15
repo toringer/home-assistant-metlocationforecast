@@ -1,0 +1,8 @@
+{
+  "domain": "metlocationforecast",
+  "name": "met.no location forecast",
+  "documentation": "https://github.com/toringer/home-assistant-metlocationforecast",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@toringer"]
+}
