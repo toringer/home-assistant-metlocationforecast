@@ -1,15 +1,15 @@
-"""Support for Yr.no weather service."""
 import asyncio
 import logging
 
 from xml.parsers.expat import ExpatError
 
+
 import aiohttp
 import async_timeout
 import voluptuous as vol
-import datetime
 import requests
-
+from datetime import datetime, timedelta
+#import datetime
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import (
@@ -20,10 +20,12 @@ from homeassistant.helpers.event import (async_track_utc_time_change,
                                          async_call_later)
 from homeassistant.util import dt as dt_util
 
+
+
 _LOGGER = logging.getLogger(__name__)
 
 
-SCAN_INTERVAL = datetime.timedelta(minutes=30)
+SCAN_INTERVAL = timedelta(minutes=30)
 
 # https://api.met.no/license_data.html
 ATTRIBUTION = "Weather forecast from met.no, delivered by the Norwegian " \
@@ -108,17 +110,47 @@ class MetLocationForecast(Entity):
     async def async_update(self):
         """Retrieve latest state."""
         data = await self._met_api.fetching_data()
-        # forecast = []
-        # for time_entry in data["properties"]["timeseries"]:
-        #     _LOGGER.info("time_entry: " + str(time_entry))
-        #     valid_from = time_entry['time']
-        #     valid_to = (dt_util.parse_datetime(time_entry['time']) + datetime.timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        #     unit = data['properties']['meta']['units']['precipitation_amount']
-        #     value = time_entry['data']['instant']['details']['precipitation_rate']
-        #     forecast.append({'unit': unit,'value': value, 'from': valid_from, 'to': valid_to})
+        timeseries = data['properties']['timeseries']
 
-        self._forecast = data['properties']['timeseries']
-        self._state = self._forecast[0]['data']['instant']['details']['air_temperature']
+
+        def getData(forecast):
+            return {'symbol': forecast['data']['next_6_hours']['summary']['symbol_code'],
+                    'air_temperature':forecast['data']['instant']['details']['air_temperature'],
+                    'precipitation_amount':forecast['data']['next_6_hours']['details']['precipitation_amount'],
+                    'precipitation_amount_max':forecast['data']['next_6_hours']['details']['precipitation_amount_max'],
+                    'precipitation_amount_min':forecast['data']['next_6_hours']['details']['precipitation_amount_min'],
+                    'precipitation_unit':data['properties']['meta']['units']['precipitation_amount'],
+                    'air_temperature_unit': data['properties']['meta']['units']['air_temperature'],
+                    'time': forecast['time']}
+
+        def nearestHour():
+            t = datetime.now()
+            if t.minute >= 30:
+                return t.replace(second=0, microsecond=0, minute=0, hour=t.hour+1)
+            else:
+                return t.replace(second=0, microsecond=0, minute=0)
+
+        refTime =nearestHour()
+        _LOGGER.debug("nearestHour: " + refTime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+
+        forecasts = []
+        forecast = next(filter(lambda x: x["time"] == refTime.strftime('%Y-%m-%dT%H:%M:%SZ'), timeseries))
+        forecasts.append(getData(forecast))
+
+        forecast = next(filter(lambda x: x["time"] == (refTime + timedelta(hours=6)).strftime('%Y-%m-%dT%H:%M:%SZ'), timeseries))
+        forecasts.append(getData(forecast))
+
+        forecast = next(filter(lambda x: x["time"] == (refTime + timedelta(hours=12)).strftime('%Y-%m-%dT%H:%M:%SZ'), timeseries))
+        forecasts.append(getData(forecast))
+
+        forecast = next(filter(lambda x: x["time"] == (refTime + timedelta(hours=18)).strftime('%Y-%m-%dT%H:%M:%SZ'), timeseries))
+        forecasts.append(getData(forecast))
+
+        forecast = next(filter(lambda x: x["time"] == (refTime + timedelta(hours=24)).strftime('%Y-%m-%dT%H:%M:%SZ'), timeseries))
+        forecasts.append(getData(forecast))
+
+        self._forecast = forecasts
+        self._state = self._forecast[0]['air_temperature']
         self._unit_of_measurement = data['properties']['meta']['units']['air_temperature']
 
 
@@ -157,4 +189,3 @@ class MetData:
         except (ExpatError, IndexError) as err:
             try_again(err)
             return
-
