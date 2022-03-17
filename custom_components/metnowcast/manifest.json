@@ -1,0 +1,15 @@
+{
+  "domain": "metlocationforecast",
+  "name": "Met.no location forecast",
+  "version": "2.0.0-beta",
+  "config_flow": true,
+  "documentation": "https://github.com/toringer/home-assistant-metlocationforecast",
+  "issue_tracker": "https://github.com/toringer/home-assistant-metlocationforecast/issues",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": ["@toringer"],
+  "iot_class": "cloud_polling"
+}

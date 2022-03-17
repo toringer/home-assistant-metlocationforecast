@@ -1,0 +1,1 @@
+ln -s /root/home-assistant-metlocationforecast/custom_components/metlocationforecast metlocationforecast

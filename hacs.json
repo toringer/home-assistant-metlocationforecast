@@ -1,0 +1,7 @@
+{
+  "name": "Met.no location forecast",
+  "domains": ["metlocationforecast"],
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "metlocationforecast.zip"
+}
