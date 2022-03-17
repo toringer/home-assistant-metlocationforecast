@@ -7,6 +7,7 @@
 
 # Met.no location forecast component for Home Assistant
 
+6 hour forecast from met.no
 TODO
 
 ## Installation
