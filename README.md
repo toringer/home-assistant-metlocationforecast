@@ -1,3 +1,5 @@
+## Obsolete, see [met-next-6-hours-forecast](https://github.com/toringer/home-assistant-met-next-6-hours-forecast)
+
 # met.no location forecast
 
 This component will add a sensor for met.no location forecast. Detailed precipitation data is available in the 'forecast' attribute.
